@@ -1,8 +1,12 @@
 // src/app/attendance-check/AttendanceForm.tsx
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 import { useRef, useState, FormEvent } from 'react';
-import { verifyAuthenticationAction } from './page';
+import { verifyAuthenticationAction } from './actions';
+
 
 interface AttendanceFormProps {
   authenticationOptions: any; // 필요에 따라 타입 지정

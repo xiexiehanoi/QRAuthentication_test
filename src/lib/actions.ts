@@ -1,4 +1,8 @@
 // src/lib/actions.ts
+'use server';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { headers } from 'next/headers';
 import clientPromise from './mongodb';
 import {
@@ -11,15 +15,16 @@ import type {
   RegistrationCredential,
   AuthenticationCredential,
 } from '@simplewebauthn/typescript-types';
-import type { User, Device } from '../lib/type';
+import type { User, Device } from './type'; // 주의: 경로가 올바른지 확인하세요.
 
-// 현재 요청의 헤더를 사용하여 origin과 rpID를 동적으로 생성하는 함수
-function getOriginAndRpID() {
-  // next/headers의 headers() 함수는 서버 컴포넌트나 서버 액션 내에서만 사용 가능합니다.
-  const reqHeaders = headers();
-  // "host" 헤더 값이 존재해야 합니다.
+/**
+ * 현재 요청의 헤더를 사용하여 origin과 rpID를 동적으로 생성하는 함수
+ * next/headers는 앱 디렉토리의 서버 컴포넌트나 서버 액션에서만 사용 가능합니다.
+ */
+async function getOriginAndRpID(): Promise<{ origin: string; rpID: string }> {
+  const reqHeaders = await headers(); // Promise를 await
   const host = reqHeaders.get('host');
-  // x-forwarded-proto가 있으면 프로토콜을 사용하고, 없으면 http를 기본값으로 사용합니다.
+  if (!host) throw new Error('Host header is missing');
   const proto = reqHeaders.get('x-forwarded-proto') || 'http';
   const origin = `${proto}://${host}`;
   const { hostname: rpID } = new URL(origin);
@@ -27,7 +32,7 @@ function getOriginAndRpID() {
 }
 
 export async function getRegistrationOptions(): Promise<any> {
-  const { origin, rpID } = getOriginAndRpID();
+  const { rpID } = await getOriginAndRpID();
 
   const client = await clientPromise;
   const db = client.db();
@@ -42,7 +47,7 @@ export async function getRegistrationOptions(): Promise<any> {
   }
 
   // userID를 Uint8Array로 변환 (TextEncoder 사용)
-  const userID = new TextEncoder().encode(user._id.toString());
+  const userID = new TextEncoder().encode(user._id?.toString() || '');
 
   // generateRegistrationOptions의 반환값에 challenge가 반드시 있다고 단언합니다.
   const options = generateRegistrationOptions({
@@ -69,7 +74,7 @@ export async function getRegistrationOptions(): Promise<any> {
 export async function verifyRegistration(
   verificationResponse: RegistrationCredential
 ): Promise<boolean> {
-  const { origin, rpID } = getOriginAndRpID();
+  const { origin, rpID } = await getOriginAndRpID();
 
   const client = await clientPromise;
   const db = client.db();
@@ -89,10 +94,8 @@ export async function verifyRegistration(
   });
 
   if (verification.verified && verification.registrationInfo) {
-    // 필요한 프로퍼티들을 any로 캐스팅하여 추출 (타입 정의가 달라질 수 있음)
     const { credentialPublicKey, credentialID, counter } =
       verification.registrationInfo as any;
-    // 신규 기기를 사용자 레코드에 추가
     await usersCollection.updateOne(
       { _id: user._id },
       {
@@ -111,7 +114,7 @@ export async function verifyRegistration(
 }
 
 export async function getAuthenticationOptions(): Promise<any> {
-  const { origin, rpID } = getOriginAndRpID();
+  const { rpID } = await getOriginAndRpID();
 
   const client = await clientPromise;
   const db = client.db();
@@ -120,7 +123,6 @@ export async function getAuthenticationOptions(): Promise<any> {
   const user = await usersCollection.findOne({ username: 'dummy' });
   if (!user) throw new Error('User not found');
 
-  // generateAuthenticationOptions 호출 시 rpID를 포함해야 합니다.
   const options = generateAuthenticationOptions({
     rpID,
     allowCredentials: user.devices.map((dev: Device) => ({
@@ -142,7 +144,7 @@ export async function getAuthenticationOptions(): Promise<any> {
 export async function verifyAuthentication(
   verificationResponse: AuthenticationCredential
 ): Promise<boolean> {
-  const { origin, rpID } = getOriginAndRpID();
+  const { origin, rpID } = await getOriginAndRpID();
 
   const client = await clientPromise;
   const db = client.db();
@@ -159,9 +161,6 @@ export async function verifyAuthentication(
   });
   if (!device) throw new Error('Device not found');
 
-  // verifyAuthenticationResponse의 인자에 authenticator 속성이 필요함.
-  // 타입 오류가 발생하면 any 단언을 사용합니다.
-  // @ts-ignore
   const verification = await verifyAuthenticationResponse({
     response: verificationResponse as any,
     expectedChallenge,

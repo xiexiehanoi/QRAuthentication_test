@@ -1,12 +1,14 @@
-// src/model/types.ts
+// src/lib/type.ts
+import { ObjectId } from 'mongodb';
+
 export interface Device {
-  credentialID: Buffer; // 저장 시 Buffer 혹은 base64 string으로 관리
+  credentialID: Buffer;
   publicKey: string;
   counter: number;
 }
 
 export interface User {
-  _id?: any;
+  _id?: ObjectId;
   username: string;
   devices: Device[];
   currentChallenge?: string;

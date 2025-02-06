@@ -1,15 +1,11 @@
-// src/app/passkey-registration/RegistrationForm.tsx
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 import { useRef, useState, FormEvent } from 'react';
-// 서버 액션은 서버 컴포넌트(page.tsx)에서 내보낸 것을 가져옵니다.
-import { verifyRegistrationAction } from './page';
 
-interface RegistrationFormProps {
-  registrationOptions: any; // 필요에 따라 타입 지정
-}
-
-export default function RegistrationForm({ registrationOptions }: RegistrationFormProps) {
+export default function RegistrationForm({ registrationOptions }: { registrationOptions: any }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [message, setMessage] = useState('');
 
@@ -22,7 +18,6 @@ export default function RegistrationForm({ registrationOptions }: RegistrationFo
       if (formRef.current) {
         const input = formRef.current.elements.namedItem('registrationResponse') as HTMLInputElement;
         input.value = JSON.stringify(credentialJson);
-        // 직접 서버 액션을 호출 via form submission
         formRef.current.requestSubmit();
       }
     } catch (err) {
@@ -35,9 +30,13 @@ export default function RegistrationForm({ registrationOptions }: RegistrationFo
     e.preventDefault();
     const formData = new FormData(formRef.current!);
     try {
-      // 서버 액션 호출
-      const result = await verifyRegistrationAction(formData);
-      setMessage(result ? 'Registration successful!' : 'Registration failed.');
+      const response = await fetch('/api/verifyRegistration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(formData)),
+      });
+      const result = await response.json();
+      setMessage(result.verified ? 'Registration successful!' : 'Registration failed.');
     } catch (err: any) {
       console.error(err);
       setMessage('Error during registration.');
@@ -47,7 +46,7 @@ export default function RegistrationForm({ registrationOptions }: RegistrationFo
   return (
     <div>
       <h1>Passkey Registration</h1>
-      <form ref={formRef} method="post" onSubmit={onSubmit}>
+      <form ref={formRef} onSubmit={onSubmit}>
         <input type="hidden" name="registrationResponse" />
       </form>
       <button onClick={handleRegister}>Register using Face ID</button>

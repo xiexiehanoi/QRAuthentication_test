@@ -1,19 +1,25 @@
 // src/app/passkey-registration/page.tsx
-import { getRegistrationOptions, verifyRegistration } from '../../lib/actions';
-import RegistrationForm from './registrationform';
+'use client';
 
-export default async function PasskeyRegistrationPage() {
-  const registrationOptions = await getRegistrationOptions();
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// 클라이언트 전용 RegistrationForm을 동적 import합니다.
+const RegistrationForm = dynamic(() => import('./registrationform'), { ssr: false });
+
+export default function PasskeyRegistrationPage() {
+  const [registrationOptions, setRegistrationOptions] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/getRegistrationOptions')
+      .then((res) => res.json())
+      .then((data) => setRegistrationOptions(data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  if (!registrationOptions) return <p>Loading...</p>;
+
   return <RegistrationForm registrationOptions={registrationOptions} />;
-}
-
-// 서버 액션: 등록 응답 검증
-export async function verifyRegistrationAction(formData: FormData) {
-  const registrationResponse = formData.get('registrationResponse') as string;
-  if (!registrationResponse) {
-    throw new Error('No registration response provided');
-  }
-  const parsed = JSON.parse(registrationResponse);
-  const verified = await verifyRegistration(parsed);
-  return verified;
 }
