@@ -1,11 +1,15 @@
-// app/attendance-check/attendanceform.tsx
+// app/attendance-check/AttendanceForm.tsx
 'use client';
 
 import { useState } from 'react';
 import { startAuthentication } from '@simplewebauthn/browser';
 import { verifyAuthentication } from '@/lib/actions';
-import type { AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
-import { AttendanceFormProps, AuthenticationError } from '@/lib/type';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/typescript-types';
+import { AuthenticationError } from '@/lib/type';
+
+interface AttendanceFormProps {
+  authenticationOptions: PublicKeyCredentialRequestOptionsJSON;
+}
 
 export default function AttendanceForm({ authenticationOptions }: AttendanceFormProps) {
   const [message, setMessage] = useState('');
@@ -19,15 +23,10 @@ export default function AttendanceForm({ authenticationOptions }: AttendanceForm
       const assertion = await startAuthentication(authenticationOptions);
       const rpID = window.location.hostname;
       const origin = window.location.origin;
-      const verified = await verifyAuthentication(
-        assertion as AuthenticationResponseJSON,
-        rpID,
-        origin
-      );
+      const verified = await verifyAuthentication(assertion, rpID, origin);
       
       setMessage(verified ? 'Attendance checked successfully!' : 'Authentication failed.');
     } catch (err) {
-      console.error(err);
       const error = err as AuthenticationError;
       setMessage(`Error: ${error.message || 'Authentication failed'}`);
     } finally {

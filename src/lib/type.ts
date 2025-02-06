@@ -2,8 +2,6 @@
 import { ObjectId } from 'mongodb';
 import type { 
   PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-  RegistrationResponseJSON
 } from '@simplewebauthn/typescript-types';
 
 export interface Device {
@@ -19,26 +17,24 @@ export interface User {
   currentChallenge?: string;
 }
 
-// 클라이언트 컴포넌트용 Props 타입들
-export interface RegistrationFormProps {
-  registrationOptions: PublicKeyCredentialCreationOptionsJSON;
-  username: string;
-}
-
-export interface AttendanceFormProps {
-  authenticationOptions: PublicKeyCredentialRequestOptionsJSON;
-}
-
-export type RegistrationError = {
+export interface RegistrationError extends Error {
   message: string;
   name: string;
 }
 
-export type AuthenticationError = {
+export interface AuthenticationError extends Error {
   message: string;
   name: string;
 }
 
-export interface RegistrationResult {
-  response: RegistrationResponseJSON;
+export interface RegistrationState {
+  loading: boolean;
+  error: string | null;
+  options: PublicKeyCredentialCreationOptionsJSON | null;
+}
+
+export interface AuthenticationState {
+  loading: boolean;
+  error: string | null;
+  options: PublicKeyCredentialCreationOptionsJSON | null;
 }

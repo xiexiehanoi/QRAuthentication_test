@@ -8,18 +8,37 @@ import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/type
 
 export default function AttendanceCheckPage() {
   const [options, setOptions] = useState<PublicKeyCredentialRequestOptionsJSON | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initAuthentication = async () => {
-      const rpID = window.location.hostname;
-      const authenticationOptions = await getAuthenticationOptions(rpID);
-      setOptions(authenticationOptions);
+      try {
+        const rpID = window.location.hostname;
+        const authenticationOptions = await getAuthenticationOptions(rpID);
+        setOptions(authenticationOptions);
+      } catch (err) {
+        console.log("err message: ", err)
+        setError('Failed to initialize authentication');
+      } finally {
+        setLoading(false);
+      }
     };
 
     initAuthentication();
   }, []);
 
-  if (!options) return <div>Loading...</div>;
+  if (loading) {
+    return <div className="p-4 text-center">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-center text-red-600">{error}</div>;
+  }
+
+  if (!options) {
+    return <div className="p-4 text-center">Failed to load authentication options</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
