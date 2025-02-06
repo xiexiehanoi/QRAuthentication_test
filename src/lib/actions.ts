@@ -62,8 +62,8 @@ export async function verifyAndSaveRegistration(
   origin: string
 ) {
   const client = await clientPromise;
-  const db = client.db();
-  const users = db.collection<User>('users');
+  const db = client.db('ncamp');
+  const users = db.collection('users');
 
   const user = await users.findOne({ username });
   if (!user) throw new Error('User not found');
@@ -128,8 +128,8 @@ export async function verifyAuthentication(
 ) {
   try {
     const client = await clientPromise;
-    const db = client.db();
-    const users = db.collection<User>('users');
+    const db = client.db('ncamp');
+    const users = db.collection('users');
 
     const searchCredentialId = Buffer.from(response.id, 'base64url');
     
