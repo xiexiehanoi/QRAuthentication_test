@@ -7,8 +7,8 @@ import type {
 } from '@simplewebauthn/typescript-types';
 
 export interface Device {
-  credentialID: Uint8Array;
-  publicKey: Uint8Array;
+  credentialID: Buffer;
+  publicKey: Buffer;
   counter: number;
 }
 
