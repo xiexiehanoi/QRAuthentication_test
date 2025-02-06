@@ -126,15 +126,27 @@ export async function verifyAndSaveRegistration(
 export async function getAuthenticationOptions(rpID: string) {
   console.log('Generating authentication options for RPID:', rpID);
   
-  const options = await generateAuthenticationOptions({
-    rpID,
-    timeout: 60000,
-    userVerification: 'required',
-    allowCredentials: [],
-  });
 
-  console.log('Generated authentication options:', options);
-  return options;
+    const client = await clientPromise;
+    const db = client.db('ncamp');
+    const users = db.collection<User>('users');
+
+  
+    const options = await generateAuthenticationOptions({
+      rpID,
+      timeout: 60000,
+      userVerification: 'required',
+      allowCredentials: [],
+    });
+  
+
+    await users.updateOne(
+      { username: 'test-user' },
+      { $set: { currentChallenge: options.challenge } }
+    );
+
+  
+    return options;
 }
 
 // 출석 체크 인증 확인
