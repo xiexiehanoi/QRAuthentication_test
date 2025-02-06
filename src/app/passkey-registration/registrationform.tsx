@@ -14,6 +14,7 @@ export default function RegistrationForm({ registrationOptions }: { registration
       const credential = (await navigator.credentials.create({
         publicKey: registrationOptions,
       })) as PublicKeyCredential;
+      // toJSON()는 브라우저에 따라 구현되어 있을 수 있음. 없다면 직접 헬퍼 함수를 사용하세요.
       const credentialJson = (credential as any).toJSON();
       if (formRef.current) {
         const input = formRef.current.elements.namedItem('registrationResponse') as HTMLInputElement;

@@ -15,7 +15,10 @@ export default function PasskeyRegistrationPage() {
   useEffect(() => {
     fetch('/api/getRegistrationOptions')
       .then((res) => res.json())
-      .then((data) => setRegistrationOptions(data))
+      .then((data) => {
+        console.log('Registration options:', data);
+        setRegistrationOptions(data);
+      })
       .catch((err) => console.error(err));
   }, []);
 
