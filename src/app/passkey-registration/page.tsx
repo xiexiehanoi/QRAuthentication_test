@@ -2,7 +2,7 @@
 'use client';
 
 import { handleRegistration } from '@/lib/actions';
-import RegistrationForm from './RegistrationForm';
+import RegistrationForm from './registrationform';
 import { useEffect, useState } from 'react';
 
 export default function PasskeyRegistrationPage() {
