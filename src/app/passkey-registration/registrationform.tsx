@@ -15,6 +15,8 @@ export default function RegistrationForm({ registrationOptions }: { registration
       })) as PublicKeyCredential;
       // 헬퍼 함수를 사용하여 credential을 JSON으로 직렬화
       const credentialJson = credentialToJSON(credential);
+      console.log("credential: ", credential)
+      console.log("credentialJson: ", credentialJson)
       if (formRef.current) {
         const input = formRef.current.elements.namedItem('registrationResponse') as HTMLInputElement;
         input.value = JSON.stringify(credentialJson);
@@ -30,7 +32,7 @@ export default function RegistrationForm({ registrationOptions }: { registration
     e.preventDefault();
     const formData = new FormData(formRef.current!);
     try {
-      const response = await fetch('/api/verifyRegistration', {
+      const response = await fetch('/api/verifyregistration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.fromEntries(formData)),
