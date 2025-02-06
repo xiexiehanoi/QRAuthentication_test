@@ -13,7 +13,7 @@ export default function PasskeyRegistrationPage() {
   const [registrationOptions, setRegistrationOptions] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/getRegistrationOptions')
+    fetch('/api/getregistrationoptions')
       .then((res) => res.json())
       .then((data) => {
         console.log('Registration options:', data);
