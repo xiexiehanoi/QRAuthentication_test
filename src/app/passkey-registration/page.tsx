@@ -1,28 +1,32 @@
-// src/app/passkey-registration/page.tsx
+// app/passkey-registration/page.tsx
 'use client';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { handleRegistration } from '@/lib/actions';
+import RegistrationForm from './RegistrationForm';
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-
-// 클라이언트 전용 RegistrationForm을 동적 import합니다.
-const RegistrationForm = dynamic(() => import('./registrationform'), { ssr: false });
 
 export default function PasskeyRegistrationPage() {
-  const [registrationOptions, setRegistrationOptions] = useState<any>(null);
+  const [options, setOptions] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/getregistrationoptions')
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('Registration options:', data);
-        setRegistrationOptions(data);
-      })
-      .catch((err) => console.error(err));
+    const initRegistration = async () => {
+      const rpID = window.location.hostname;
+      const origin = window.location.origin;
+      const registrationOptions = await handleRegistration('test-user', rpID, origin);
+      setOptions(registrationOptions);
+    };
+
+    initRegistration();
   }, []);
 
-  if (!registrationOptions) return <p>Loading...</p>;
+  if (!options) return <div>Loading...</div>;
 
-  return <RegistrationForm registrationOptions={registrationOptions} />;
+  return (
+    <div className="container mx-auto p-4">
+      <RegistrationForm 
+        registrationOptions={options}
+        username="test-user" 
+      />
+    </div>
+  );
 }

@@ -1,58 +1,55 @@
+// app/passkey-registration/RegistrationForm.tsx
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useRef, useState, FormEvent } from 'react';
-import { credentialToJSON } from './credentialutils'; // 헬퍼 함수 import
+import { useState } from 'react';
+import { startRegistration } from '@simplewebauthn/browser';
+import { verifyAndSaveRegistration } from '@/lib/actions';
 
-export default function RegistrationForm({ registrationOptions }: { registrationOptions: any }) {
-  const formRef = useRef<HTMLFormElement>(null);
+interface RegistrationFormProps {
+  registrationOptions: any;
+  username: string;
+}
+
+export default function RegistrationForm({ registrationOptions, username }: RegistrationFormProps) {
   const [message, setMessage] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const handleRegister = async () => {
     try {
-      const credential = (await navigator.credentials.create({
-        publicKey: registrationOptions,
-      })) as PublicKeyCredential;
-      // 헬퍼 함수를 사용하여 credential을 JSON으로 직렬화
-      const credentialJson = credentialToJSON(credential);
-      console.log("credential: ", credential)
-      console.log("credentialJson: ", credentialJson)
-      if (formRef.current) {
-        const input = formRef.current.elements.namedItem('registrationResponse') as HTMLInputElement;
-        input.value = JSON.stringify(credentialJson);
-        formRef.current.requestSubmit();
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage('Error during registration.');
-    }
-  };
-
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(formRef.current!);
-    try {
-      const response = await fetch('/api/verifyregistration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(formData)),
-      });
-      const result = await response.json();
-      setMessage(result.verified ? 'Registration successful!' : 'Registration failed.');
+      setIsRegistering(true);
+      setMessage('Starting registration...');
+      
+      const attestation = await startRegistration(registrationOptions);
+      const rpID = window.location.hostname;
+      const origin = window.location.origin;
+      const verified = await verifyAndSaveRegistration(username, attestation, rpID, origin);
+      
+      setMessage(verified ? 'Registration successful!' : 'Registration failed.');
     } catch (err: any) {
       console.error(err);
-      setMessage('Error during registration.');
+      setMessage(`Error: ${err.message || 'Registration failed'}`);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
   return (
-    <div>
-      <h1>Passkey Registration</h1>
-      <form ref={formRef} onSubmit={onSubmit}>
-        <input type="hidden" name="registrationResponse" />
-      </form>
-      <button onClick={handleRegister}>Register using Face ID</button>
-      {message && <p>{message}</p>}
+    <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+      <h1 className="text-2xl font-bold mb-4">Passkey Registration</h1>
+      <button 
+        onClick={handleRegister}
+        disabled={isRegistering}
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+      >
+        {isRegistering ? 'Registering...' : 'Register using Face ID'}
+      </button>
+      {message && (
+        <p className={`mt-4 p-2 rounded ${
+          message.includes('successful') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        }`}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }
