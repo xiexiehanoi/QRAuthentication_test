@@ -4,9 +4,10 @@
 import { handleRegistration } from '@/lib/actions';
 import RegistrationForm from './registrationform';
 import { useEffect, useState } from 'react';
+import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/typescript-types';
 
 export default function PasskeyRegistrationPage() {
-  const [options, setOptions] = useState<any>(null);
+  const [options, setOptions] = useState<PublicKeyCredentialCreationOptionsJSON | null>(null);
 
   useEffect(() => {
     const initRegistration = async () => {

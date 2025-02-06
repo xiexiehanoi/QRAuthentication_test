@@ -4,9 +4,10 @@
 import { getAuthenticationOptions } from '@/lib/actions';
 import AttendanceForm from './attendanceform';
 import { useEffect, useState } from 'react';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/typescript-types';
 
 export default function AttendanceCheckPage() {
-  const [options, setOptions] = useState<any>(null);
+  const [options, setOptions] = useState<PublicKeyCredentialRequestOptionsJSON | null>(null);
 
   useEffect(() => {
     const initAuthentication = async () => {

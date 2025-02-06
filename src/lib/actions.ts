@@ -17,6 +17,8 @@ export async function handleRegistration(username: string, rpID: string, origin:
   const db = client.db();
   const users = db.collection<User>('users');
 
+  console.log('Origin:', origin);
+
   const existingUser = await users.findOne({ username });
   if (existingUser) {
     throw new Error('Username already exists');

@@ -4,10 +4,8 @@
 import { useState } from 'react';
 import { startAuthentication } from '@simplewebauthn/browser';
 import { verifyAuthentication } from '@/lib/actions';
-
-interface AttendanceFormProps {
-  authenticationOptions: any;
-}
+import type { AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
+import { AttendanceFormProps, AuthenticationError } from '@/lib/type';
 
 export default function AttendanceForm({ authenticationOptions }: AttendanceFormProps) {
   const [message, setMessage] = useState('');
@@ -21,12 +19,17 @@ export default function AttendanceForm({ authenticationOptions }: AttendanceForm
       const assertion = await startAuthentication(authenticationOptions);
       const rpID = window.location.hostname;
       const origin = window.location.origin;
-      const verified = await verifyAuthentication(assertion, rpID, origin);
+      const verified = await verifyAuthentication(
+        assertion as AuthenticationResponseJSON,
+        rpID,
+        origin
+      );
       
       setMessage(verified ? 'Attendance checked successfully!' : 'Authentication failed.');
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setMessage(`Error: ${err.message || 'Authentication failed'}`);
+      const error = err as AuthenticationError;
+      setMessage(`Error: ${error.message || 'Authentication failed'}`);
     } finally {
       setIsChecking(false);
     }

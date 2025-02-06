@@ -4,11 +4,8 @@
 import { useState } from 'react';
 import { startRegistration } from '@simplewebauthn/browser';
 import { verifyAndSaveRegistration } from '@/lib/actions';
-
-interface RegistrationFormProps {
-  registrationOptions: any;
-  username: string;
-}
+import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import { RegistrationFormProps, RegistrationError } from '@/lib/type';
 
 export default function RegistrationForm({ registrationOptions, username }: RegistrationFormProps) {
   const [message, setMessage] = useState('');
@@ -22,12 +19,18 @@ export default function RegistrationForm({ registrationOptions, username }: Regi
       const attestation = await startRegistration(registrationOptions);
       const rpID = window.location.hostname;
       const origin = window.location.origin;
-      const verified = await verifyAndSaveRegistration(username, attestation, rpID, origin);
+      const verified = await verifyAndSaveRegistration(
+        username,
+        attestation as RegistrationResponseJSON,
+        rpID,
+        origin
+      );
       
       setMessage(verified ? 'Registration successful!' : 'Registration failed.');
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setMessage(`Error: ${err.message || 'Registration failed'}`);
+      const error = err as RegistrationError;
+      setMessage(`Error: ${error.message || 'Registration failed'}`);
     } finally {
       setIsRegistering(false);
     }
