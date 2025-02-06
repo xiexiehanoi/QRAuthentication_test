@@ -1,11 +1,17 @@
 // models/AttendanceSession.ts
-import mongoose from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-const AttendanceSessionSchema = new mongoose.Schema({
+export interface IAttendanceSession extends Document {
+  sessionId: string;
+  userId: mongoose.Types.ObjectId;
+  timestamp: Date;
+}
+
+const AttendanceSessionSchema = new Schema<IAttendanceSession>({
   sessionId: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.AttendanceSession ||
-  mongoose.model('AttendanceSession', AttendanceSessionSchema);
+export default (mongoose.models.AttendanceSession as Model<IAttendanceSession>) ||
+  mongoose.model<IAttendanceSession>('AttendanceSession', AttendanceSessionSchema);

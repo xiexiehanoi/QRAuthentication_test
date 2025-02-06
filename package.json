@@ -9,7 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^7.3.1",
     "@simplewebauthn/server": "^13.1.1",
+    "@simplewebauthn/typescript-types": "^8.3.4",
+    "mongodb": "^6.13.0",
     "mongoose": "^8.9.7",
     "next": "15.1.6",
     "qrcode.react": "^4.2.0",

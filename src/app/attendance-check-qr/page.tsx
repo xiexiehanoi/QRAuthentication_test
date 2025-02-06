@@ -1,27 +1,32 @@
-// app/attendance-check-qr/page.tsx
+// src/app/attendance-check-qr/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
-import { v4 as uuidv4 } from 'uuid';
+import  { QRCodeCanvas } from 'qrcode.react';
 
 export default function AttendanceCheckQRPage() {
-  const [sessionId, setSessionId] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setSessionId(uuidv4());
+    const ua = navigator.userAgent;
+    if (/android|iPad|iPhone|iPod/i.test(ua)) {
+      setIsMobile(true);
+    }
   }, []);
 
-  if (!sessionId) return <p>로딩중...</p>;
+  if (isMobile) {
+    return <p>이 페이지는 데스크탑에서 열어 QR 코드를 스캔하세요.</p>;
+  }
+
+  const url =
+    typeof window !== 'undefined'
+      ? window.location.origin + '/attendance-check'
+      : '';
 
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>출석 체크 QR 코드</h1>
-      <p>Session ID: {sessionId}</p>
-      <QRCodeCanvas
-        value={`${window.location.origin}/attendance-check?sessionId=${sessionId}`}
-        size={300}
-      />
+    <div>
+      <h1>Scan this QR code with your iPhone for Attendance Check</h1>
+      <QRCodeCanvas value={url} size={256} />
     </div>
   );
 }

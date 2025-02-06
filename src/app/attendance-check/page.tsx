@@ -1,19 +1,19 @@
-// app/attendance-check/page.tsx
-import PasskeyAuthenticationClient from './passkey-authentication-client';
+// src/app/attendance-check/page.tsx
+import { getAuthenticationOptions, verifyAuthentication } from '../../lib/actions';
+import AttendanceForm from './attendanceform';
 
-interface AttendanceCheckPageProps {
-  searchParams: {
-    sessionId: string;
-  };
+export default async function AttendanceCheckPage() {
+  const authenticationOptions = await getAuthenticationOptions();
+  return <AttendanceForm authenticationOptions={authenticationOptions} />;
 }
 
-export default function AttendanceCheckPage({ searchParams }: AttendanceCheckPageProps) {
-  const { sessionId } = searchParams;
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h1>출석 체크</h1>
-      <p>Session ID: {sessionId}</p>
-      <PasskeyAuthenticationClient sessionId={sessionId} />
-    </div>
-  );
+// 서버 액션: 인증 응답 검증
+export async function verifyAuthenticationAction(formData: FormData) {
+  const authenticationResponse = formData.get('authenticationResponse') as string;
+  if (!authenticationResponse) {
+    throw new Error('No authentication response provided');
+  }
+  const parsed = JSON.parse(authenticationResponse);
+  const verified = await verifyAuthentication(parsed);
+  return verified;
 }
