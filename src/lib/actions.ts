@@ -58,7 +58,7 @@ export async function getRegistrationOptions(): Promise<any> {
     attestationType: 'none',
     authenticatorSelection: {
       userVerification: 'required',
-      residentKey: 'required',
+      residentKey: 'preferred',
     },
   }) as any;
 

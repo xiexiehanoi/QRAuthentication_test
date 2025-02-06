@@ -1,9 +1,8 @@
 'use client';
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-
 import { useRef, useState, FormEvent } from 'react';
+import { credentialToJSON } from './credentialutils'; // 헬퍼 함수 import
 
 export default function RegistrationForm({ registrationOptions }: { registrationOptions: any }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -14,8 +13,8 @@ export default function RegistrationForm({ registrationOptions }: { registration
       const credential = (await navigator.credentials.create({
         publicKey: registrationOptions,
       })) as PublicKeyCredential;
-      // toJSON()는 브라우저에 따라 구현되어 있을 수 있음. 없다면 직접 헬퍼 함수를 사용하세요.
-      const credentialJson = (credential as any).toJSON();
+      // 헬퍼 함수를 사용하여 credential을 JSON으로 직렬화
+      const credentialJson = credentialToJSON(credential);
       if (formRef.current) {
         const input = formRef.current.elements.namedItem('registrationResponse') as HTMLInputElement;
         input.value = JSON.stringify(credentialJson);
